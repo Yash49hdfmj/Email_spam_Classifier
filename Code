@@ -1,0 +1,77 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.feature_extraction.text import CountVectorizer
+
+#import dataset
+
+spam_df= pd.read_csv("spam.csv")
+
+#inspect data
+
+spam_df
+
+#group by
+
+spam_df.groupby("Category").describe()
+
+spam_df['spam']= spam_df['Category'].apply(lambda x:1 if x == 'spam' else 0)
+
+# turn spam/ham into numerical data , creating a new column called "spam"
+# lambda is a dummy function which stores a argument x from column Category and apply if else condition from "spam" or "not spam"
+
+spam_df
+
+# here spam column makes it easier to classify our data as ham or spam into numerical basis 0 or 1
+
+'''---------------------------------------------------------------------------------------------------'''
+
+#create a train test split
+
+x_train,x_test,y_train,y_test = train_test_split(spam_df.Message, spam_df.spam)
+
+# above x variable is going to be my feature as message
+# by default test_size = 0.25 we can adjust it like 0.50 or 0.75
+
+x_train
+
+# features are word count
+# labels are spam or not spam
+
+x_train.describe()
+
+# we've 4179 total emails in split 
+
+# find word count and store data as numerical matrix 
+
+cv = CountVectorizer()
+x_train_count =cv.fit_transform(x_train.values)
+
+# fit_transform used for transform all word counts into matrix
+
+x_train_count          # numerical data
+
+# sparse matrix has 4179 rows across this msgs 7529 are unique words 
+
+x_train_count.toarray()
+
+# train model
+
+model = MultinomialNB()
+model.fit(x_train_count,y_train)
+
+# pre-test ham
+
+email_ham = ["could you help me ?"]
+email_ham_count = cv.transform(email_ham)
+model.predict(email_ham_count)
+
+# pre-test spam
+email_spam = ["free"]
+email_spam_count = cv.transform(email_spam)
+model.predict(email_spam_count)
+
+# test model
+x_test_count = cv.transform(x_test)
+model.score(x_test_count,y_test)
